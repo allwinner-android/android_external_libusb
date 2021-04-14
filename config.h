@@ -9,7 +9,7 @@
 /* #undef ENABLE_DEBUG_LOGGING */
 
 /* Message logging */
-#define ENABLE_LOGGING 1
+//#define ENABLE_LOGGING 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -18,7 +18,9 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `rt' library (-lrt). */
-/* #undef HAVE_LIBRT */
+#ifdef _SHARED_LIBRARY_	
+#define HAVE_LIBRT 1
+#endif
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -52,10 +54,10 @@
 /* #undef NO_MINUS_C_MINUS_O */
 
 /* Darwin backend */
-#define OS_DARWIN /**/
+/* #define OS_DARWIN */
 
 /* Linux backend */
-/* #undef OS_LINUX */
+#define OS_LINUX
 
 /* Name of package */
 #define PACKAGE "libusb"
@@ -81,11 +83,16 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+#ifndef _SHARED_LIBRARY_
 /* Backend handles timeout */
 #define USBI_OS_HANDLES_TIMEOUT /**/
 
 /* timerfd headers available */
 /* #undef USBI_TIMERFD_AVAILABLE */
+#else
+#undef USBI_OS_HANDLES_TIMEOUT
+#undef USBI_TIMERFD_AVAILABLE
+#endif
 
 /* Version number of package */
 #define VERSION "1.0.8"

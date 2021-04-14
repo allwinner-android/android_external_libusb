@@ -32,6 +32,8 @@
 #include "libusb.h"
 #include "libusbi.h"
 
+#include <android/log.h>
+
 #if defined(OS_LINUX)
 const struct usbi_os_backend * const usbi_backend = &linux_usbfs_backend;
 #elif defined(OS_DARWIN)
@@ -1538,7 +1540,11 @@ void usbi_log(struct libusb_context *ctx, enum usbi_log_level level,
 {
 	va_list args;
 	FILE *stream = stdout;
+#if defined(__ANDROID__)
+    int prio;
+#else
 	const char *prefix;
+#endif
 
 #ifndef ENABLE_DEBUG_LOGGING
 	USBI_GET_CONTEXT(ctx);
@@ -1549,6 +1555,30 @@ void usbi_log(struct libusb_context *ctx, enum usbi_log_level level,
 	if (level == LOG_LEVEL_INFO && ctx->debug < 3)
 		return;
 #endif
+
+#if defined(__ANDROID__)
+       switch (level) {
+               case LOG_LEVEL_INFO:
+                       prio = ANDROID_LOG_INFO;
+                       break;
+               case LOG_LEVEL_WARNING:
+                       prio = ANDROID_LOG_WARN;
+                       break;
+               case LOG_LEVEL_ERROR:
+                       prio = ANDROID_LOG_ERROR;
+                       break;
+               case LOG_LEVEL_DEBUG:
+                       prio = ANDROID_LOG_DEBUG;
+                       break;
+               default:
+                       prio = ANDROID_LOG_UNKNOWN;
+                       break;
+       }
+
+       va_start (args, format);
+       __android_log_vprint(prio, "LibUsb", format, args);
+       va_end (args);
+#else
 
 	switch (level) {
 	case LOG_LEVEL_INFO:
@@ -1579,5 +1609,6 @@ void usbi_log(struct libusb_context *ctx, enum usbi_log_level level,
 	va_end (args);
 
 	fprintf(stream, "\n");
+#endif
 }
 
